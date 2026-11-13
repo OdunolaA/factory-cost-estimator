@@ -28,8 +28,7 @@ All figures are indicative planning assumptions, not supplier quotes.
 
 ## Built with
 
-- HTML, CSS and vanilla JavaScript, in a single file with no dependencies
-- Built with AI-assisted development (Claude), with cost logic and assumptions designed from manufacturing consulting experience
+- HTML, CSS, Claude and vanilla JavaScript, in a single file with no dependencies, with cost logic and assumptions designed from manufacturing consulting experience
 
 ## What I'd build next
 
