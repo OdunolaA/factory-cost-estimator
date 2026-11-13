@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kinmo Factory Cost Estimator</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=Inter+Tight:wght@700;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: inputs panel left, live estimate right; stacks to one column on phones. Kinmo navy/purple brand. */
+:root{
+  --bg:#0c1722; --surface:#13223a; --surface-2:#1b2d4f; --line:#2a3e5e;
+  --fg:#eef2f8; --muted:#a6b3c7; --accent:#b48be0; --accent-strong:#5c2d8a; --slate:#3c5878;
+  --warn:#e8b45a;
+  --display:"Inter Tight","Inter",system-ui,sans-serif;
+  --body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]){
+  --bg:#f3f5f9; --surface:#ffffff; --surface-2:#e8ecf3; --line:#d3dae6;
+  --fg:#14223b; --muted:#56637a; --accent:#5c2d8a; --accent-strong:#5c2d8a; --slate:#3c5878; --warn:#9a6410;
+  color-scheme:light}}
+:root[data-theme="light"]{
+  --bg:#f3f5f9; --surface:#ffffff; --surface-2:#e8ecf3; --line:#d3dae6;
+  --fg:#14223b; --muted:#56637a; --accent:#5c2d8a; --accent-strong:#5c2d8a; --slate:#3c5878; --warn:#9a6410;
+  color-scheme:light}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 48px}
+.wrap{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+header{display:flex;flex-direction:column;gap:10px}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent)}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(28px,4.5vw,44px);line-height:1.05;margin:0;letter-spacing:-.02em;text-wrap:balance}
+.lede{color:var(--muted);max-width:62ch;margin:0}
+.bars{display:flex;flex-direction:column;align-items:flex-end;gap:6px;position:absolute;right:0;top:4px}
+.bars i{display:block;height:10px;border-radius:1px}
+.head-row{position:relative}
+@media (max-width:640px){.bars{display:none}}
+.grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:24px;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:22px;display:flex;flex-direction:column;gap:18px;min-width:0}
+.panel h2{font-family:var(--display);font-size:18px;margin:0;font-weight:700}
+.field{display:flex;flex-direction:column;gap:6px}
+label,.lbl{font-size:13px;font-weight:600}
+.hint{font-size:12px;color:var(--muted)}
+select,input[type=number]{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:9px 10px;width:100%}
+select:focus-visible,input:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.range-row{display:flex;align-items:center;gap:12px}
+input[type=range]{flex:1;accent-color:var(--accent)}
+.cap-val{font-family:var(--mono);font-variant-numeric:tabular-nums;min-width:92px;text-align:right}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg label{font-weight:500;font-size:13px;text-align:center;padding:9px 6px;cursor:pointer;border-left:1px solid var(--line);color:var(--muted)}
+.seg label:first-of-type{border-left:0}
+.seg input:checked + label{background:var(--accent-strong);color:#fff}
+.seg input:focus-visible + label{outline:2px solid var(--accent);outline-offset:-2px}
+details{border-top:1px solid var(--line);padding-top:14px}
+summary{cursor:pointer;font-weight:600;font-size:14px}
+.assume{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+@media (max-width:420px){.assume{grid-template-columns:1fr}}
+.total-block{display:flex;flex-direction:column;gap:4px}
+.total{font-family:var(--display);font-weight:800;font-size:clamp(32px,5vw,48px);letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.05}
+.usd{font-family:var(--mono);color:var(--muted);font-size:13px}
+.rangebar{font-size:13px;color:var(--muted)}
+.rangebar b{color:var(--fg);font-weight:600}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:9px 0;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:500}
+td.n{text-align:right;font-family:var(--mono);white-space:nowrap;padding-left:12px}
+td.share{width:34%;padding-left:14px}
+.track{height:8px;background:var(--surface-2);border-radius:1px;overflow:hidden}
+.fill{height:100%;background:var(--slate)}
+tr.cap .fill{background:var(--accent)}
+tr.sum td{font-weight:700;border-bottom:0}
+.note{font-size:12px;color:var(--muted);margin:0}
+.flag{font-size:13px;border-left:3px solid var(--warn);padding:8px 12px;background:var(--surface-2);border-radius:0 4px 4px 0;margin:0}
+.cta{background:var(--surface-2);border-radius:6px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.cta h3{font-family:var(--display);margin:0;font-size:20px}
+.contact{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:13px;background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:6px 6px 6px 10px;user-select:all}
+.chip button{font:inherit;font-family:var(--body);font-size:12px;background:var(--accent-strong);color:#fff;border:0;border-radius:3px;padding:3px 8px;cursor:pointer;user-select:none}
+footer{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){.fill{transition:width .3s ease}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="head-row">
+    <span class="eyebrow">Kinmo Solutions · Planning tool</span>
+    <h1>What will your factory cost?</h1>
+    <p class="lede">Pick a product, capacity and setup to get an indicative capital budget for a small to medium processing plant in Nigeria, including working capital and contingency.</p>
+    <div class="bars" aria-hidden="true"><i style="width:120px;background:#5c2d8a"></i><i style="width:150px;background:#3c5878"></i><i style="width:180px;background:#2a4472"></i></div>
+  </header>
+
+  <div class="grid">
+    <form class="panel" id="inputs" onsubmit="event.preventDefault()">
+      <h2>Your project</h2>
+
+      <div class="field">
+        <label for="product">Product</label>
+        <select id="product"></select>
+      </div>
+
+      <div class="field">
+        <label for="cap">Capacity (tonnes of raw material per day)</label>
+        <div class="range-row">
+          <input type="range" id="cap" min="0.5" max="50" step="0.5" value="2" aria-describedby="capOut">
+          <span class="cap-val" id="capOut">2 t/day</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="lbl" id="bldLbl">Building</span>
+        <div class="seg" role="radiogroup" aria-labelledby="bldLbl">
+          <input type="radio" name="bld" id="bld-lease" value="lease" checked><label for="bld-lease">Lease &amp; renovate</label>
+          <input type="radio" name="bld" id="bld-build" value="build"><label for="bld-build">Buy land &amp; build</label>
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="lbl" id="eqLbl">Equipment sourcing</span>
+        <div class="seg" role="radiogroup" aria-labelledby="eqLbl">
+          <input type="radio" name="eq" id="eq-local" value="local"><label for="eq-local">Mostly local</label>
+          <input type="radio" name="eq" id="eq-mixed" value="mixed" checked><label for="eq-mixed">Mixed</label>
+          <input type="radio" name="eq" id="eq-imported" value="imported"><label for="eq-imported">Imported</label>
+        </div>
+        <span class="hint">Mixed means locally fabricated pre-processing with an imported core machine.</span>
+      </div>
+
+      <div class="field">
+        <span class="lbl" id="pwLbl">Power</span>
+        <div class="seg" role="radiogroup" aria-labelledby="pwLbl">
+          <input type="radio" name="pw" id="pw-gen" value="gen" checked><label for="pw-gen">Grid + generator</label>
+          <input type="radio" name="pw" id="pw-solar" value="solar"><label for="pw-solar">Solar hybrid</label>
+        </div>
+      </div>
+
+      <details>
+        <summary>Planning assumptions</summary>
+        <div class="assume">
+          <div class="field"><label for="fx">Exchange rate (₦ per $)</label><input type="number" id="fx" value="1500" min="1" step="10"></div>
+          <div class="field"><label for="cont">Contingency (%)</label><input type="number" id="cont" value="20" min="0" max="60" step="1"></div>
+          <div class="field"><label for="fxbuf">FX buffer on imports (%)</label><input type="number" id="fxbuf" value="20" min="0" max="60" step="1"></div>
+          <div class="field"><label for="wc">Working capital (months)</label><input type="number" id="wc" value="4" min="0" max="12" step="1"></div>
+        </div>
+        <p class="note" style="margin-top:10px">Update the exchange rate to today's rate before sharing an estimate.</p>
+      </details>
+    </form>
+
+    <section class="panel" aria-live="polite">
+      <div class="total-block">
+        <span class="eyebrow">Estimated total investment</span>
+        <span class="total" id="total">₦0</span>
+        <span class="usd" id="totalUsd">≈ $0</span>
+        <span class="rangebar" id="range"></span>
+      </div>
+
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>Cost line</th><th style="text-align:right">Amount</th><th class="share">Share</th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+
+      <p class="flag" id="flag" hidden></p>
+      <p class="note">Indicative only. Figures come from Kinmo planning assumptions for Nigeria, not supplier quotes. Equipment, land, power and raw material prices vary widely by location and change with the exchange rate.</p>
+
+      <div class="cta">
+        <h3>Turn this into a bankable budget</h3>
+        <p class="note" style="font-size:14px">Kinmo Solutions sizes equipment, gets supplier quotes and builds the feasibility study that banks and investors expect. Book a free call to talk through your project.</p>
+        <div class="contact">
+          <span class="chip">info@kinmosolutions.com <button type="button" data-copy="info@kinmosolutions.com">Copy</button></span>
+          <span class="chip">+234 902 737 2860 <button type="button" data-copy="+234 902 737 2860">Copy</button></span>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer>Building factories across Africa · kinmosolutions.com</footer>
+</div>
+
+<script>
+// Equipment cost in USD for a 1 t/day fully imported line; scaled by capacity^0.65.
+// powerF: relative energy intensity; opsF: relative monthly running cost.
+const PRODUCTS = {
+  shea:    {name:"Shea butter (unrefined)",      eqUsd:34000, powerF:1.0, opsF:1.0},
+  cashew:  {name:"Cashew processing",            eqUsd:45000, powerF:0.9, opsF:1.2},
+  cassava: {name:"Cassava flour / garri",        eqUsd:30000, powerF:1.1, opsF:0.9},
+  tomato:  {name:"Tomato paste",                 eqUsd:60000, powerF:1.3, opsF:1.3},
+  oil:     {name:"Edible oil (palm kernel/soy)", eqUsd:40000, powerF:1.2, opsF:1.1},
+  peanut:  {name:"Peanut butter & snacks",       eqUsd:40000, powerF:1.0, opsF:1.1},
+  rice:    {name:"Rice milling",                 eqUsd:38000, powerF:1.0, opsF:1.0}
+};
+const SOURCING = { local:{mult:0.6, importShare:0.2}, mixed:{mult:0.8, importShare:0.5}, imported:{mult:1.0, importShare:0.85} };
+
+const $ = id => document.getElementById(id);
+const sel = $("product");
+for (const [k,p] of Object.entries(PRODUCTS)) sel.add(new Option(p.name, k));
+
+function radio(name){ return document.querySelector(`input[name="${name}"]:checked`).value; }
+function num(id, fallback){ const v = parseFloat($(id).value); return Number.isFinite(v) && v >= 0 ? v : fallback; }
+
+function estimate(){
+  const p = PRODUCTS[sel.value];
+  const cap = parseFloat($("cap").value);
+  const fx = num("fx",1500), cont = num("cont",20)/100, fxBuf = num("fxbuf",20)/100, wcMonths = num("wc",4);
+  const src = SOURCING[radio("eq")];
+
+  const equipment = p.eqUsd * Math.pow(cap, 0.65) * src.mult * fx;
+  const install = equipment * 0.12;
+
+  const area = 250 + 120 * cap; // m²
+  const building = radio("bld") === "lease"
+    ? area * 15000 + area * 8000            // renovation + first year's lease
+    : area * 180000 + 20000000;             // construction + land
+  const kva = 40 + 35 * cap * p.powerF;
+  const power = kva * (radio("pw") === "gen" ? 75000 : 220000);
+  const approvals = 3000000 + 500000 * cap;
+
+  const capexBase = equipment + install + building + power + approvals;
+  const fxBuffer = equipment * src.importShare * fxBuf;
+  const contingency = capexBase * cont;
+  const workingCap = (2200000 + 1600000 * cap) * p.opsF * wcMonths;
+
+  const rows = [
+    ["Equipment", equipment, true],
+    ["Installation & commissioning", install, true],
+    [radio("bld")==="lease" ? "Building (renovation + 1st year lease)" : "Land & building", building, true],
+    [`Power (${Math.round(kva)} kVA)`, power, true],
+    ["Approvals & certification", approvals, true],
+    ["FX buffer on imported equipment", fxBuffer, false],
+    ["Contingency", contingency, false],
+    [`Working capital (${wcMonths} months)`, workingCap, false]
+  ];
+  const total = rows.reduce((s,r)=>s+r[1],0);
+  return {rows,total,fx,cap,p,src};
+}
+
+const ngn = v => "₦" + (v >= 1e9 ? (v/1e9).toFixed(2)+"bn" : (v/1e6).toFixed(1)+"m");
+const usd = v => "$" + Math.round(v).toLocaleString("en-US");
+
+function render(){
+  const cap = parseFloat($("cap").value);
+  $("capOut").textContent = (cap % 1 ? cap.toFixed(1) : cap) + " t/day";
+  const e = estimate();
+  $("total").textContent = ngn(e.total);
+  $("totalUsd").textContent = "≈ " + usd(e.total / e.fx) + " at ₦" + e.fx.toLocaleString("en-US") + "/$";
+  $("range").innerHTML = `Likely range: <b>${ngn(e.total*0.75)}</b> to <b>${ngn(e.total*1.3)}</b>`;
+  const max = Math.max(...e.rows.map(r=>r[1]));
+  $("rows").innerHTML = e.rows.map(([label,v,isCap]) =>
+    `<tr class="${isCap?'cap':''}"><td>${label}</td><td class="n">${ngn(v)}</td><td class="share"><div class="track"><div class="fill" style="width:${(v/max*100).toFixed(1)}%"></div></div></td></tr>`
+  ).join("") + `<tr class="sum"><td>Total</td><td class="n">${ngn(e.total)}</td><td></td></tr>`;
+
+  const flag = $("flag");
+  if (e.cap > 20) { flag.hidden = false; flag.textContent = "Above 20 t/day, plant design varies a lot by product. Treat this as a rough order of magnitude and get a detailed feasibility study."; }
+  else if (radio("eq") === "local" && e.cap > 5) { flag.hidden = false; flag.textContent = "Mostly local equipment at this scale can cut yield and reliability. Check fabricators' track records and consider importing the core machine."; }
+  else flag.hidden = true;
+}
+
+document.getElementById("inputs").addEventListener("input", render);
+document.querySelectorAll("[data-copy]").forEach(b => b.addEventListener("click", () => {
+  const text = b.dataset.copy;
+  const done = () => { b.textContent = "Copied"; setTimeout(()=> b.textContent = "Copy", 1500); };
+  try { navigator.clipboard.writeText(text).then(done, () => selectText(b)); } catch { selectText(b); }
+}));
+function selectText(b){ const r = document.createRange(); r.selectNodeContents(b.parentNode.firstChild); const s = getSelection(); s.removeAllRanges(); s.addRange(r); }
+render();
+</script>
+</body>
+</html>
