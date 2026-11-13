@@ -1,6 +1,6 @@
 # factory-cost-estimator# Kinmo Factory Cost Estimator
 
-**Live demo:** [your GitHub Pages link]
+**Live demo:** https://odunolaa.github.io/factory-cost-estimator/
 
 An interactive tool that gives an indicative capital budget for a small to medium processing plant in Nigeria, from shea butter and cashew to tomato paste and rice milling.
 
@@ -40,4 +40,4 @@ All figures are indicative planning assumptions, not supplier quotes.
 
 ## About
 
-Built by [Your Name] · Founder, [Kinmo Solutions](https://kinmosolutions.com), building factories across Africa
+Built by Odun Akinmoladun · Founder, [Kinmo Solutions](https://kinmosolutions.com)
