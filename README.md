@@ -30,6 +30,12 @@ All figures are indicative planning assumptions, not supplier quotes.
 
 - HTML, CSS, Claude and vanilla JavaScript, in a single file with no dependencies, with cost logic and assumptions designed from manufacturing consulting experience
 
+## Wireframes
+
+   | Desktop | Mobile: inputs | Mobile: estimate |
+   |---|---|---|
+   | ![Desktop](wireframes/desktop.png) | ![Mobile inputs](wireframes/mobile-inputs.png) | ![Mobile estimate](wireframes/mobile-results.png) 
+   
 ## What I'd build next
 
 1. Calibrate cost assumptions against real supplier quotes by state
